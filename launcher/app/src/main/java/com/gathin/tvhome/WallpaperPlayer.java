@@ -129,15 +129,26 @@ interval = 10_000L;
         }
     }
 
-    void start() {
-        active = true;
-        update();
+    private final Runnable tick = new Runnable() {
+    @Override public void run() {
+        if (active && !closed) {
+            update();
+            root.postDelayed(this, 10_000L);
+        }
     }
+};
 
-    void stop() {
-        active = false;
-    }
+void start() {
+    active = true;
+    update();
+    root.removeCallbacks(tick);
+    root.postDelayed(tick, 10_000L);
+}
 
+void stop() {
+    active = false;
+    root.removeCallbacks(tick);
+}
     /** Drops the wallpaper texture when Home is hidden and Android asks the process to free memory. */
     void releaseForMemoryPressure() {
         if (current == null) return;
